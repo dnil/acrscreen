@@ -195,7 +195,7 @@ while(my $r=<$polyoutfh>) {
 			$wormnonsynpos++;
 		    }
 		}
-		print $outputfh "WORM\t$worm\t$wormsynpos\t$wormnonsynpos"; # farm
+		print $outputfh "WORM\t$worm\t$wormsynpos\t$wormnonsynpos\n"; # farm
 	    }
 	}
     } elsif($in_section == 1) {
@@ -299,11 +299,11 @@ while(my $r=<$polyoutfh>) {
 	    
 	    my @refcodon = split(/ */, $refcodon);
 
-	    if ( $var1 eq $refbase and $var2 eq $refbase) {
-		
-	    } else {
-		# polymorphic..
-	    }
+#	    if ( $var1 eq $refbase and $var2 eq $refbase) {
+#		
+#	    } else {
+#		# polymorphic..
+#	    }
 
 	    if ($refpos < $presumed_coding_start or $refpos > $presumed_coding_end) {
 		# ignored..
