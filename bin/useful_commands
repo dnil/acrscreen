@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# (c)2010-03 Daniel Nilsson, daniel.nilsson@izb.unibe.ch, daniel.k.nilsson@gmail.com
+#
+
+PHRAP=/home/daniel/src/phrap/phrap
+PHRED=/home/daniel/src/phred.071220.b/phred
+PHD2FASTA=phd2fasta
+POLYPHRED=/home/daniel/src/polyphred-6.18-binary-x86_64-unknown-linux-gnu/bin/polyphred
+SUDOPHRED=/home/daniel/src/polyphred-6.18-binary-x86_64-unknown-linux-gnu/bin/sudophred
+CONSED=/home/daniel/src/consed/consed_linux64bit_static
+
+CONSEDIFY=/home/daniel/src/malariamotifs/bin/consedify.pl
+POLYPHREDPHD2IUPACFASTA=/home/daniel/acr_screen/bin/polyphredphd2iupacfasta.pl
+
+BASE=sb
+
+mkdir chromat_dir edit_dir phd_dir poly_dir
+
+cd chromat_dir 
+
+# for file in *ab1 ; do mv $file `echo $file | perl -ne 'chomp; @r = split(/[\_\-]+/); print join ("-",$r[0],$r[1]."_".$r[2],$r[3]."_".$r[4])."\n";'` ;done
+
+cd ../edit_dir
+
+$PHRED -id ../chromat_dir -pd ../phd_dir -dd ../poly_dir -sa fb.fasta -qa fb.fasta.qual -trim_alt "" -trim_fasta -trim_phd -trim_cutoff 0.10 
+
+# no, turn that sequence around first..
+../../.. ../../eii.fasta.consedified.contigs.screen -r -q 20
+
+$PHD2FASTA -id ../phd_dir -os ${BASE}.ref.fasta -oq ${BASE}.ref.fasta.qual
+
+ ${BASE}.ref.fasta ${BASE}.ref.fasta.qual ../phd_dir 
+
+ln -s $BASE.ref.fasta.qual.consedified ${BASE}.ref.fasta.consedified.qual
+
+$PHRAP -new_ace -forcelevel 10 ${BASE}.ref.fasta.consedified > ${BASE}.ref.fasta.consedified.phrap_out
+
+# redo can use a clear..
+
+$POLYPHRED -clear
+
+# depending on naming style
+# $POLYPHRED -s /- -o ${BASE}.ref.fasta.consedified.polyout -ace ${BASE}.ref.fasta.consedified.ace -ref -indel 30
+
+$POLYPHRED -s 1 10 -o ${BASE}.ref.fasta.consedified.polyout -ace ${BASE}.ref.fasta.consedified.ace -ref -indel 30
+
+for phdfile in ../phd_dir/*phd*; 
+do 
+   $POLYPHRED2IUPACFASTA $phdfile >> $base.iupac.fasta
+done
+
+$CONSED
