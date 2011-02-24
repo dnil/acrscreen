@@ -282,16 +282,16 @@ while(my $r=<$polyoutfh>) {
 
 	    my $refpos = $col[1];
 	    my $mod3 = ($refpos - $presumed_coding_start) % 3;
-		
+	    
 	    my $refcodonpos = $refpos - $mod3;
 	    my $refseqbases = $refseq->seq();
 	    my $refcodon = substr($refseqbases, $refcodonpos-1, 3);
 	    my $refbase = substr($refseqbases, $refpos-1,1);
 	    my $refaa = nt2aa($refcodon);
-	   	    
+	    
 	    my $readname = $col[3];
 	    my $readpos = $col[2];
-	   
+	    
 	    my ($worm) = ($readname =~ /^(\w{3}\d{4}\-\d{2})/);
 	    
 	    $var1 = $col[4];
@@ -299,126 +299,126 @@ while(my $r=<$polyoutfh>) {
 	    
 	    my @refcodon = split(/ */, $refcodon);
 
-#	    if ( $var1 eq $refbase and $var2 eq $refbase) {
-#		
-#	    } else {
-#		# polymorphic..
-#	    }
-
-	    if ($refpos < $presumed_coding_start or $refpos > $presumed_coding_end) {
-		# ignored..
-	    } else {
-		# same as reference.. count for frequencies?
-		my $aa1;
-		my $aa2;
-
-		my $codon1;
-		my $codon2;
-
-		# what about heterozygous positions next to each other?
-		# ignore for now, as these are rare. 
-		# as corollary, the surrounding read positions typically are not confidently called as polymorphic,
-		# and should be treated as unreliable. We thus call the aa changes using the reference codon, plus
-		# the read base from the actually called reference position. We thus no longer require reading reads.
-		# And also don't have to solve the issue of reversed read coordinates, which seems to be a little ill
-		# defined at the moment?
+	    if ( $var1 eq $refbase and $var2 eq $refbase) {
 		
+	    } else {
+		# polymorphic..
+
+		if ($refpos < $presumed_coding_start or $refpos > $presumed_coding_end) {
+		    # ignored..
+		} else {
+		    # same as reference.. count for frequencies?
+		    my $aa1;
+		    my $aa2;
+
+		    my $codon1;
+		    my $codon2;
+
+		    # what about heterozygous positions next to each other?
+		    # ignore for now, as these are rare. 
+		    # as corollary, the surrounding read positions typically are not confidently called as polymorphic,
+		    # and should be treated as unreliable. We thus call the aa changes using the reference codon, plus
+		    # the read base from the actually called reference position. We thus no longer require reading reads.
+		    # And also don't have to solve the issue of reversed read coordinates, which seems to be a little ill
+		    # defined at the moment?
+		    
 #		my $readseq = ${$reads{$readname}};
 #		my $readseqbases = $readseq->seq();
 
-		# note: possible to reach "outside" seq on early/late coords..
-		if ($mod3 == 0) {
-		    
-		    # substr assumes 0 based coords, so -1 for the 1-based readpos
-		    # then, we wish to start on the base after, so +1, and take 2 bases
+		    # note: possible to reach "outside" seq on early/late coords..
+		    if ($mod3 == 0) {
+			
+			# substr assumes 0 based coords, so -1 for the 1-based readpos
+			# then, we wish to start on the base after, so +1, and take 2 bases
 #		    my $ds = substr( $readseqbases, $readpos +1 -1, 2 );
-		    		    
-		    $codon1 = $var1 . $refcodon[1] . $refcodon[2];
-		    $codon2 = $var2 . $refcodon[1] . $refcodon[2];
-		    
-		    $aa1 = nt2aa($codon1);
-		    $aa2 = nt2aa($codon2);
-		}
-		elsif ($mod3 == 1) {
-		    
-		    # substr assumes 0 based coords, so -1 for the 1-based readpos
-		    # then, we wish to start on the base after, so +1, and take 1 base
+			
+			$codon1 = $var1 . $refcodon[1] . $refcodon[2];
+			$codon2 = $var2 . $refcodon[1] . $refcodon[2];
+			
+			$aa1 = nt2aa($codon1);
+			$aa2 = nt2aa($codon2);
+		    }
+		    elsif ($mod3 == 1) {
+			
+			# substr assumes 0 based coords, so -1 for the 1-based readpos
+			# then, we wish to start on the base after, so +1, and take 1 base
 #		    my $ds = substr( $readseqbases, $readpos +1 -1, 1 );
-		    # then, we wish to start on the base before and, so -1, and take 1 base
+			# then, we wish to start on the base before and, so -1, and take 1 base
 #		    my $us=substr( $readseqbases, $readpos - 1 -1, 1 );
 
-		    $codon1 = $refcodon[0] . $var1 . $refcodon[2];;
-		    $codon2 = $refcodon[0] . $var2 . $refcodon[2];;
-		    
-		    $aa1 = nt2aa($codon1);
-		    $aa2 = nt2aa($codon2);
-		} 
-		elsif ($mod3 == 2) {
-		    # substr assumes 0 based coords, so -1 for the 1-based readpos
-		    # then, we wish to start on the base two steps before and, so -2, and take 2 bases
+			$codon1 = $refcodon[0] . $var1 . $refcodon[2];;
+			$codon2 = $refcodon[0] . $var2 . $refcodon[2];;
+			
+			$aa1 = nt2aa($codon1);
+			$aa2 = nt2aa($codon2);
+		    } 
+		    elsif ($mod3 == 2) {
+			# substr assumes 0 based coords, so -1 for the 1-based readpos
+			# then, we wish to start on the base two steps before and, so -2, and take 2 bases
 #		    my $us=substr( $readseqbases, $readpos - 2 -1, 2 );
 
-		    $codon1 = $refcodon[0] . $refcodon[1] . $var1;
-		    $codon2 = $refcodon[0] . $refcodon[1] . $var2;
+			$codon1 = $refcodon[0] . $refcodon[1] . $var1;
+			$codon2 = $refcodon[0] . $refcodon[1] . $var2;
 
-		    $aa1 = nt2aa($codon1);
-		    $aa2 = nt2aa($codon2);
-		}
-
-		my $heterozygote =0;
-		if( $var1 ne $var2 ) {
-		    $heterozygote_positions++;
-		    $heterozygote=1;
-		    $DEBUG && print $outputfh "position $refpos - $readname heterozygous $var1 $var2 at readpos $readpos.\n";
-		}
-
-		if( $refaa eq $aa1 ) {
-		    $DEBUG && print $outputfh "DEBUG: reference aa $refaa equals variant position, individual worm aa $aa1 for $readname, var 1.\n";
-		    if (uc($codon1) ne uc($refcodon)) {
-			$synonymous++;
-			# log a synonymous variant
-			if(defined($variant{$worm}{$refpos}) && $variant{$worm}{$refpos} >= 1 ) {
-			    # this variant has previously been logged for this worm but from another read. ignore.
-			} else {
-			    $variant{$worm}{$refpos}=2;
-			}
-		    } else {
-			# do nothing - no change in this copy
+			$aa1 = nt2aa($codon1);
+			$aa2 = nt2aa($codon2);
 		    }
-		} else {
-		    $nonsynonymous++;
-		    $DEBUG && print $outputfh "DEBUG: refpos $refpos, mod3 $mod3, refcodonpos $refcodonpos, refcodon $refcodon, refbase $refbase, refaa $refaa, length refseq obj ".($refseq->length()).", len refseqbases ".(length($refseqbases)).".\n";
-		    $DEBUG && print $outputfh "Found codon 1 $codon1 ($aa1) and 2 $codon2 ($aa2) (P$mod3).\n";
-		    print $outputfh "refpos $refpos, reference_aa $refaa($refcodon), worm_aa1 $aa1($codon1),  worm $worm, read $readname var1, readpos $readpos, frame F".($mod3+1).".\n";
-		    # log a non-synonymous variant
-		    $variant{$worm}{$refpos} = 3;
-		    # allow for multiple variants?
-		} 
 
-		if ($refaa eq $aa2) {
-		    $DEBUG && print $outputfh "DEBUG: reference aa $refaa equals variant position, individual worm aa $aa2 for $readname, var 2.\n";
-		    if (uc($codon2) ne uc($refcodon)) {
-			$synonymous++;
+		    my $heterozygote =0;
+		    if( $var1 ne $var2 ) {
+			$heterozygote_positions++;
+			$heterozygote=1;
+			$DEBUG && print $outputfh "position $refpos - $readname heterozygous $var1 $var2 at readpos $readpos.\n";
+		    }
 
-			if ( defined($variant{$worm}{$refpos}) && $variant{$worm}{$refpos} >= 2 )  {
-			    # if variant is homozygous and already marked, no use marking again, right?
-			} else {
+		    if( $refaa eq $aa1 ) {
+			$DEBUG && print $outputfh "DEBUG: reference aa $refaa equals variant position, individual worm aa $aa1 for $readname, var 1.\n";
+			if (uc($codon1) ne uc($refcodon)) {
+			    $synonymous++;
 			    # log a synonymous variant
-			    $variant{$worm}{$refpos} = 2;
+			    if(defined($variant{$worm}{$refpos}) && $variant{$worm}{$refpos} >= 1 ) {
+				# this variant has previously been logged for this worm but from another read. ignore.
+			    } else {
+				$variant{$worm}{$refpos}=2;
+			    }
+			} else {
+			    # do nothing - no change in this copy
 			}
 		    } else {
-                        # else do nothing - no change in this copy
+			$nonsynonymous++;
+			$DEBUG && print $outputfh "DEBUG: refpos $refpos, mod3 $mod3, refcodonpos $refcodonpos, refcodon $refcodon, refbase $refbase, refaa $refaa, length refseq obj ".($refseq->length()).", len refseqbases ".(length($refseqbases)).".\n";
+			$DEBUG && print $outputfh "Found codon 1 $codon1 ($aa1) and 2 $codon2 ($aa2) (P$mod3).\n";
+			print $outputfh "refpos $refpos, reference_aa $refaa($refcodon), worm_aa1 $aa1($codon1),  worm $worm, read $readname var1, readpos $readpos, frame F".($mod3+1).".\n";
+			# log a non-synonymous variant
+			$variant{$worm}{$refpos} = 3;
+			# allow for multiple variants?
+		    } 
+
+		    if ($refaa eq $aa2) {
+			$DEBUG && print $outputfh "DEBUG: reference aa $refaa equals variant position, individual worm aa $aa2 for $readname, var 2.\n";
+			if (uc($codon2) ne uc($refcodon)) {
+			    $synonymous++;
+
+			    if ( defined($variant{$worm}{$refpos}) && $variant{$worm}{$refpos} >= 2 )  {
+				# if variant is homozygous and already marked, no use marking again, right?
+			    } else {
+				# log a synonymous variant
+				$variant{$worm}{$refpos} = 2;
+			    }
+			} else {
+			    # else do nothing - no change in this copy
+			}
+		    } else {
+			$nonsynonymous++;
+
+			# log a non-synonymous variant
+			$variant{$worm}{$refpos}=3;
+			# allow for multiple variants?
+
+			$DEBUG && print $outputfh "DEBUG: refpos $refpos, mod3 $mod3, refcodonpos $refcodonpos, refcodon $refcodon, refbase $refbase, refaa $refaa, length refseq obj ".($refseq->length()).", len refseqbases ".(length($refseqbases)).".\n";
+			$DEBUG && print $outputfh "Found codon 1 $codon1 ($aa1) and 2 $codon2 ($aa2) (P$mod3).\n";
+			print $outputfh "refpos $refpos, reference_aa $refaa($refcodon), worm_aa2 $aa2($codon2),  worm $worm, read $readname var2, readpos $readpos, frame F".($mod3+1).".\n";
 		    }
-		} else {
-		    $nonsynonymous++;
-
-		    # log a non-synonymous variant
-		    $variant{$worm}{$refpos}=3;
-		    # allow for multiple variants?
-
-		    $DEBUG && print $outputfh "DEBUG: refpos $refpos, mod3 $mod3, refcodonpos $refcodonpos, refcodon $refcodon, refbase $refbase, refaa $refaa, length refseq obj ".($refseq->length()).", len refseqbases ".(length($refseqbases)).".\n";
-		    $DEBUG && print $outputfh "Found codon 1 $codon1 ($aa1) and 2 $codon2 ($aa2) (P$mod3).\n";
-		    print $outputfh "refpos $refpos, reference_aa $refaa($refcodon), worm_aa2 $aa2($codon2),  worm $worm, read $readname var2, readpos $readpos, frame F".($mod3+1).".\n";
 		}
 	    }
 	}
