@@ -355,6 +355,8 @@ then
 	    echo $file
 	fi
     done | cut -f3 -d- |cut -d_ -f 1 |sort |uniq -c >> $log
+
+    cd ../edit_dir
    
     # number of reads per farm - req farm/worm mapping
     echo "Per worm nonsynonymous and synonymous variant positions" >> $log
