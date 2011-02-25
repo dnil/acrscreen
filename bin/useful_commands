@@ -51,3 +51,7 @@ do
 done
 
 $CONSED
+
+perl -ne 'm/(\w{3}\d{4}\-\d{2})\-[\w\d]+_[\w\d]+_([\w\d-]+)/; print "$1\t$2\n";' < ../Worms\ number\ +\ Farm\ name |sort |uniq > worm-farm-tab 
+grep WORM edit_dir/hc_mptl_screen_20110224.ref.fasta.consedified.polyout.check |cut -f2,3,4 |sort> worm_s_ns
+join worm-farm-tab worm_s_ns |cut -f 2,3,4 -d\ |sort | perl -e 'while (<>) { chomp; my @t=split /\s+/; $farm{$t[0]}{"ns"}+=$t[2]; $farm{$t[0]}{"s"}+=$t[1]; $farm{$t[0]}{"worms"}+=1; } map {print $_."\t".$farm{$_}{"s"}." (".sprintf("%.3f",$farm{$_}{"s"}/$farm{$_}{"worms"}).")\t".$farm{$_}{"ns"}." (".sprintf("%.3f",$farm{$_}{"ns"}/$farm{$_}{"worms"}).")\n";} keys %farm;'
