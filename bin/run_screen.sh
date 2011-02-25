@@ -26,7 +26,7 @@ CONSED=/home/daniel/src/consed/consed_linux64bit_static
 CONSEDIFY=/home/daniel/sandbox/acrscreen/bin/consedify.pl
 #/malariamotifs/bin/consedify.pl
 
-REVSEQ=revseq
+#REVSEQ=revseq
 REVSEQPL=/home/daniel/sandbox/acrscreen/bin/revseq.pl
 POLYPHREDPHD2IUPACFASTA=/home/daniel/sandbox/acrscreen/bin/polyphredphd2iupacfasta.pl
 
@@ -247,7 +247,7 @@ then
     then
         # remove old versions
 	rm ${BASE}.all.iupac.fasta
-	rm *.isolate.iupac.fasta
+#	rm *.isolate.iupac.fasta
     fi
 
     for phdfile in ../phd_dir/*phd*;
@@ -285,19 +285,30 @@ then
 	cat ${iupacfasta} >> ${BASE}.all.iupac.fasta
 	
         # requires shopt -s extglob 
-	isolate=${phdfilebase%%-?([0-9])[FR][0-9]*}
-	cat ${iupacfasta} >> $isolate.isolate.iupac.fasta
+#	isolate=${phdfilebase%%-?([0-9])[FR][0-9]*}
+#	cat ${iupacfasta} >> $isolate.isolate.iupac.fasta
 
-	registerFile ${PWD}/$isolate.isolate.iupac.fasta temp
+#	registerFile ${PWD}/$isolate.isolate.iupac.fasta temp
     done
 
     registerFile $PWD/${BASE}.all.iupac.fasta result
 
-    for isolatefasta in *isolate.iupac.fasta
-    do
-	cat $refname$REFSTRING.polyphred.iupac.fasta >> $isolatefasta
-    done
+ #   for isolatefasta in *isolate.iupac.fasta
+ #   do
+#	cat $refname$REFSTRING.polyphred.iupac.fasta >> $isolatefasta
+#    done
 fi
+
+# per worm assembly, retaining iupac genotypes - mira
+#
+# for each worm, 
+#  cat ../edit_dir/NZL0012-59*ab1*polyphred.iupac.fasta > NZL0012-59_in.fasta
+#  ~/sandbox/Cestunepipe/bin/fasta_header_grep.pl NZL0012-59 ../edit_dir/hc_mptl_screen_20110216.ref.fasta.consedified.qual > NZL0012-59_in.sanger.fasta.qual
+#  ln -s ../edit_dir/EII.c1.polyphred.iupac.fasta NZL0012-59_backbone_in.fasta
+#  mira --project=NZL0012-59 --job=mapping,sanger -SB:bbq=20 --fasta >NZL0012-59.mira.log
+#  cat NZL0012-59_assembly/NZL0012-59_d_results/NZL0012-59_assembly/NZL0012-59_d_results/NZL0012-59_out.unpadded.fasta >> ${BASE}.wormwise.all.iupac.fasta
+#
+#
 
 # log stats
 
@@ -337,7 +348,6 @@ then
     echo "Reads   Primer" >> $log
     echo "=======|======" >> $log
 
-
     for file in `ls -1`
     do
 	if [[ "$file" =~ \-[0-9]?[FR][0-9]* ]]
@@ -350,7 +360,6 @@ then
     echo "Per worm nonsynonymous and synonymous variant positions" >> $log
     grep WORM $polyoutcheck | sort -k2,2 |awk 'BEGIN { n=0; s=0; ns=0; } { s=s+$3; ns=ns+$4; n=n+1} END { print "NS ",ns,"(",ns/n,") S ",s,"(",s/n,") N ",n; }' >> $log
 
-    
     wormfarm=`basename $WORMFARMNAME`
     wormfarmnametab=${WORMFARMNAME%%.txt}.tab
     registerFile $PWD/$wormfarmnametab temp
@@ -359,7 +368,7 @@ then
     grep WORM $polyoutcheck |cut -f2,3,4 |sort> worm_s_ns
     join $wormfarmnametab worm_s_ns |cut -f 2,3,4 -d\ |sort | perl -e 'while (<>) { chomp; my @t=split /\s+/; $farm{$t[0]}{"ns"}+=$t[2]; $farm{$t[0]}{"s"}+=$t[1]; $farm{$t[0]}{"worms"}+=1; } map {print $_."\t".$farm{$_}{"s"}." (".sprintf("%.3f",$farm{$_}{"s"}/$farm{$_}{"worms"}).")\t".$farm{$_}{"ns"}." (".sprintf("%.3f",$farm{$_}{"ns"}/$farm{$_}{"worms"}).")\n";} keys %farm; print "Found ", scalar keys %farm," farms.\n";' >> $log
     rm worm_s_ns
-    
+
 fi
 
     # muscle -in $isolatefasta -html -out ${isolatefasta%%.fasta}.muscle.html
