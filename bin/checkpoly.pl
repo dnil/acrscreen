@@ -346,8 +346,8 @@ while(my $r=<$polyoutfh>) {
 			# then, we wish to start on the base before and, so -1, and take 1 base
 #		    my $us=substr( $readseqbases, $readpos - 1 -1, 1 );
 
-			$codon1 = $refcodon[0] . $var1 . $refcodon[2];;
-			$codon2 = $refcodon[0] . $var2 . $refcodon[2];;
+			$codon1 = $refcodon[0] . $var1 . $refcodon[2];
+			$codon2 = $refcodon[0] . $var2 . $refcodon[2];
 			
 			$aa1 = nt2aa($codon1);
 			$aa2 = nt2aa($codon2);
