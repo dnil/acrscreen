@@ -36,7 +36,7 @@ PIPELINEFUNK=/home/daniel/sandbox/acrscreen/bin/pipelinefunk.sh
 REFERENCE=/home/daniel/sandbox/acrscreen/eiire.fasta
 REFSTRING=.c1
 
-WORMFARMNAME=/home/daniel/hc/WormnumberFarmname.txt
+WORMFARMNAME=/home/daniel/hc/Worms_number_Farm_name_LR_110228
 
 ### END CONFIG
 
@@ -359,13 +359,16 @@ then
     cd ../edit_dir
    
     # number of reads per farm - req farm/worm mapping
-    echo "Per worm nonsynonymous and synonymous variant positions" >> $log
+    echo "Total per worm nonsynonymous and synonymous variant positions" >> $log    
     grep WORM $polyoutcheck | sort -k2,2 |awk 'BEGIN { n=0; s=0; ns=0; } { s=s+$3; ns=ns+$4; n=n+1} END { print "NS ",ns,"(",ns/n,") S ",s,"(",s/n,") N ",n; }' >> $log
 
     wormfarm=`basename $WORMFARMNAME`
     wormfarmnametab=${WORMFARMNAME%%.txt}.tab
     registerFile $PWD/$wormfarmnametab temp
 
+    echo "Total per worm ns and s changed positions, grouped per farm" >> $log
+    echo "Farm\tS (farm average)\tNS (farm average)" >> $log
+    echo "=========================================" >> $log
     perl -ne 'm/(\w{3}\d{4}\-\d{2})\-[\w\d]+_[\w\d]+_([\w\d-]+)/; print "$1\t$2\n";' < $WORMFARMNAME |sort |uniq > $wormfarmnametab
     grep WORM $polyoutcheck |cut -f2,3,4 |sort> worm_s_ns
     join $wormfarmnametab worm_s_ns |cut -f 2,3,4 -d\ |sort | perl -e 'while (<>) { chomp; my @t=split /\s+/; $farm{$t[0]}{"ns"}+=$t[2]; $farm{$t[0]}{"s"}+=$t[1]; $farm{$t[0]}{"worms"}+=1; } map {print $_."\t".$farm{$_}{"s"}." (".sprintf("%.3f",$farm{$_}{"s"}/$farm{$_}{"worms"}).")\t".$farm{$_}{"ns"}." (".sprintf("%.3f",$farm{$_}{"ns"}/$farm{$_}{"worms"}).")\n";} keys %farm; print "Found ", scalar keys %farm," farms.\n";' >> $log
