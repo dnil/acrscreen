@@ -1,0 +1,22 @@
+A simple pipeline for Sanger read heterozyosity aware mutation screening
+
+(c) Daniel Nilsson 2010-2011. 
+
+Released under the Perl Artistic License 2.0.
+
+Some of the main programs have embedded Plain Old Documentation. 
+Use e.g. perldoc or the pod2* programs (pod2html, pod2man, pod2txt, ...)
+to view these.
+
+The main pipe is called as run_screen.sh, which then calls the
+phred/phrap/polyphred tools, including checkpoly.pl which produces
+summary statistics from the polyphred output, and
+polyphredphd2iupacfasta.pl that makes fasta files from polyphred
+annotated phd files.
+
+ perldoc run_screen.sh
+ perldoc checkpoly.pl
+ perldoc pipelinefunk.sh
+ perldoc seqfunk.pm
+
+Contact: daniel.nilsson.NO\/SPAM.izb.unibe.ch, daniel.k.nilsson.NO\/SPAM.gmail.com
