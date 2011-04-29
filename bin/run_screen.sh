@@ -240,8 +240,8 @@ then
     registerFile $PWD/${polyoutcheck} result
 fi
 
-iupacfasta=${BASE}.all.iupac.fasta
-if needsUpdate ${iupacfasta} ../phd_dir $POLYPHREDPHD2IUPACFASTA $REVSEQPL 
+alliupacfasta=${BASE}.all.iupac.fasta
+if needsUpdate ${alliupacfasta} ../phd_dir $POLYPHREDPHD2IUPACFASTA $REVSEQPL 
 then
 
     if [ -e "${BASE}.all.iupac.fasta" ]
@@ -283,7 +283,7 @@ then
 	fi
 	registerFile ${PWD}/$iupacfasta temp
 
-	cat ${iupacfasta} >> ${BASE}.all.iupac.fasta
+	cat ${iupacfasta} >> ${alliupacfasta}
 	
         # requires shopt -s extglob 
 #	isolate=${phdfilebase%%-?([0-9])[FR][0-9]*}
@@ -304,27 +304,51 @@ fi
 
 wormwiseiupacfasta=${BASE}.wormwise.all.iupac.fasta
 
-
-if needsUpdate $wormwiseiupacfasta $iupacfasta $FASTA_HEADER_GREP ${BASE}.ref.fasta.consedified.qual $REFERENCE
+if needsUpdate $wormwiseiupacfasta $alliupacfasta $FASTA_HEADER_GREP ${BASE}.ref.fasta.consedified.qual $REFERENCE
 then
-    # or ls -1 chromat_dir instead of $wormfarmname
-    for worm in `cut -f 1,2 -d- $wormfarmname |sort |uniq`
+    referencename=`grep \> $REFERENCE |sed -e 's/>//'`
+
+    # or ls -1 chromat_dir instead of $WORMFARMNAME
+    for worm in `cut -f 1,2 -d- $WORMFARMNAME |sort |uniq`
     do
-	cat $worm*ab1*polyphred.iupac.fasta > ${worm}_in.fasta
-	$FASTAHEADERGREP $worm ${BASE}.ref.fasta.consedified.qual > ${worm}_in.sanger.fasta.qual
-	ln -s $REFERENCE ${worm}_backbone_in.fasta
+	wormsangerfasta=${worm}_in.sanger.fasta
+	cat $worm*ab1*polyphred.iupac.fasta > ${wormsangerfasta}
+
+	wormsangerqual=${worm}_in.sanger.fasta.qual
+	$FASTAHEADERGREP $worm ${BASE}.ref.fasta.consedified.qual > ${wormsangerqual}
+       
+	# remove empty sequences? ignore mira qual warnings?
+	
+	wormbackbonefasta=${worm}_backbone_in.fasta
+	
+	if [ -h $wormbackbonefasta ]
+	then
+	    rm $wormbackbonefasta
+	fi
+	ln -s $REFERENCE $wormbackbonefasta
+
 	mira --project=${worm} --job=mapping,sanger -SB:bbq=20 --fasta >${worm}.mira.log
-	rm ${worm}_backbone_in.fasta
-	cat ${worm}_assembly/${worm}_d_results/${worm}_assembly/${worm}_d_results/${worm}_out.unpadded.fasta >> ${BASE}.wormwise.all.iupac.fasta
-	# rm -rf ${worm}_assembly
+
+	cat ${worm}_assembly/${worm}_d_results/${worm}_out.unpadded.fasta |sed 's/'${referencename}'_bb/'${worm}/'' >> ${wormwiseiupacfasta}
+
+	# clean up a bit already
+	rm ${wormbackbonefasta} ${wormsangerqual} ${wormsangerfasta}
+	rm -rf ${worm}_assembly
+
+
     done
+
+    registerFile ${wormwiseiupacfasta} result
 fi
+
+
+# clean up individual iupac fastas?
 
 # log stats
 
 log=$PWD/${BASE}.run_screen.log
 
-if needsUpdate $log $polyoutcheck $wormfarmname
+if needsUpdate $log $polyoutcheck $WORMFARMNAME
 then
     cd ../chromat_dir
 
@@ -373,7 +397,7 @@ then
     grep WORM $polyoutcheck | sort -k2,2 |awk 'BEGIN { n=0; s=0; ns=0; } { s=s+$3; ns=ns+$4; n=n+1} END { print "NS ",ns,"(",ns/n,") S ",s,"(",s/n,") N ",n; }' >> $log
 
     wormfarm=`basename $WORMFARMNAME`
-    wormfarmnametab=${WORMFARMNAME%%.txt}.tab
+    wormfarmnametab=${wormfarm%%.txt}.tab
     registerFile $PWD/$wormfarmnametab temp
 
     echo "Total per worm ns and s changed positions, grouped per farm" >> $log
